@@ -1,14 +1,30 @@
 import unittest
+import re
+
+from click.parser import ParsingState
 
 from sgf_parsing import (
     parse,
     SgfTree,
+    Parsing,
 )
+
 
 # Tests adapted from `problem-specifications//canonical-data.json`
 
 
 class SgfParsingTest(unittest.TestCase):
+    def test_regex(self):
+        self.assertTrue(re.match(r"[a-z]", "d"))
+        self.assertTrue(re.match(r"[a-zA-Z]", "d"))
+
+    def test_match(self):
+        match ("a", "b"):
+            case ("a", ("c" | "b")):
+                print("good")
+            case _:
+                self.fail()
+
     def test_empty_input(self):
         input_string = ""
         with self.assertRaisesWithMessage(ValueError):
@@ -56,7 +72,9 @@ class SgfParsingTest(unittest.TestCase):
 
     def test_two_nodes(self):
         input_string = "(;A[B];B[C])"
-        expected = SgfTree(properties={"A": ["B"]}, children=[SgfTree({"B": ["C"]})])
+        expected = SgfTree(
+            properties={"A": ["B"]}, children=[SgfTree({"B": ["C"]})]
+        )
         self.assertEqual(parse(input_string), expected)
 
     def test_two_child_trees(self):
@@ -64,6 +82,19 @@ class SgfParsingTest(unittest.TestCase):
         expected = SgfTree(
             properties={"A": ["B"]},
             children=[SgfTree({"B": ["C"]}), SgfTree({"C": ["D"]})],
+        )
+        self.assertEqual(parse(input_string), expected)
+
+    def test_three_nodes(self):
+        input_string = "(;A[B];B[C];C[D])"
+        expected = SgfTree(
+            properties={"A": ["B"]},
+            children=[
+                SgfTree(
+                    properties={"B": ["C"]},
+                    children=[SgfTree(properties={"C": ["D"]})],
+                )
+            ],
         )
         self.assertEqual(parse(input_string), expected)
 
